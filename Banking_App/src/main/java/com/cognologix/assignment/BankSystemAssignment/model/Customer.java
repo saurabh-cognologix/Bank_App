@@ -15,9 +15,11 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-@Entity
+@Builder
 @Table(name = "customer_table")
+@Entity
 public class Customer {
+
     @Id
     private Integer customerId;
 
@@ -27,7 +29,7 @@ public class Customer {
     private String customerName;
 
     @NotEmpty
-    @Size(min=10,max = 12)
+    @Size(min = 10,max=12, message = "Mobile Number must be of minimum 10 number and maximum 12 number")
     @Column(name="mobile_number")
     private String customerMobileNumber;
 
@@ -47,12 +49,21 @@ public class Customer {
     @Column(name="date_of_birth")
     private String customerDateOfBirth;
 
-    @OneToMany(targetEntity = Account.class,cascade = CascadeType.ALL)
-    @JoinColumn(name = "ca_fk", referencedColumnName = "customerId")
-    private List<Account> account;
+//    @OneToMany(targetEntity = Account.class,cascade = CascadeType.ALL)
+//    @JoinColumn(name = "ca_fk", referencedColumnName = "customerId")
+//    private List<Account> account;
 
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date CreatedDate = new Date();
 
+//    public Customer(Integer customerId, String customerName, String customerMobileNumber, String customerEmail, String customerPanCardNumber, String customerAadharCardNumber, String customerDateOfBirth) {
+//        this.customerId = customerId;
+//        this.customerName = customerName;
+//        this.customerMobileNumber = customerMobileNumber;
+//        this.customerEmail = customerEmail;
+//        this.customerPanCardNumber = customerPanCardNumber;
+//        this.customerAadharCardNumber = customerAadharCardNumber;
+//        this.customerDateOfBirth = customerDateOfBirth;
+//    }
 }

@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -13,7 +15,13 @@ import java.util.Date;
 @NoArgsConstructor
 @Table(name = "transaction_table")
 public class Transaction {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer transactionId;
+
+
+
     private Integer accountNumber;
 
     @Column(name="total_amount")
@@ -24,6 +32,8 @@ public class Transaction {
 
     @Column(name="withdraw_amount")
     private Double withdrawAmount;
+
+
 
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

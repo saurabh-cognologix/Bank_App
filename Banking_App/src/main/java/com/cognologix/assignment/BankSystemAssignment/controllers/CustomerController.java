@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -21,22 +22,30 @@ public class CustomerController {
 
     // POST - create customer
     @PostMapping("/createCustomer")
-    public ResponseEntity<CustomerDto> saveCustomer(@RequestBody CustomerDto customerDto){
-        System.out.println(customerDto.getAccountDto());
+    public ResponseEntity<CustomerDto> saveCustomer(@Valid @RequestBody CustomerDto customerDto){
+      //  System.out.println(customerDto.getAccountDto());
         CustomerDto customerDto1 = this.customerServices.saveCustomer(customerDto);
         return new ResponseEntity<>(customerDto1, HttpStatus.CREATED);
-
-//        accountServices.createAccount(account);
-//        return new ResponseEntity<>(account,HttpStatus.CREATED);
-
     }
 
     // PUT - update customer
     @PutMapping("/updateCustomer/{customerId}")
-   public ResponseEntity<CustomerDto> updateCustomer(@RequestBody CustomerDto customerDto,@PathVariable("customerId")Integer customerId ){
+   public ResponseEntity<?> updateCustomer(@RequestBody CustomerDto customerDto,@PathVariable("customerId")Integer customerId ){
 
-       CustomerDto updatedCustomer = this.customerServices.updateCustomerDetails(customerDto,customerId);
-       return ResponseEntity.ok(updatedCustomer);
+        return customerServices.getCustomerById(customerId)
+                .map(savedCustomer -> {
+                    savedCustomer.setCustomerName(customerDto.getCustomerName());
+                    savedCustomer.setCustomerEmail(customerDto.getCustomerEmail());
+                    savedCustomer.setCustomerPanCardNumber(customerDto.getCustomerPanCardNumber());
+                    savedCustomer.setCustomerAadharCardNumber(customerDto.getCustomerAadharCardNumber());
+                    savedCustomer.setCustomerDateOfBirth(customerDto.getCustomerDateOfBirth());
+                    savedCustomer.setCustomerMobileNumber(customerDto.getCustomerMobileNumber());
+
+                    CustomerDto customerDto1=customerServices.updateCustomerDetails(savedCustomer);
+                    return new ResponseEntity<>(customerDto1, HttpStatus.OK);
+
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
    }
 
 
@@ -58,7 +67,7 @@ public class CustomerController {
     *  Get customer by Id
     * */
     @GetMapping("/getCustomer/{customerId}")
-    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable("customerId") Integer customerId){
+    public ResponseEntity<Optional<CustomerDto>> getCustomerById(@PathVariable("customerId") Integer customerId){
         return ResponseEntity.ok(this.customerServices.getCustomerById(customerId));
     }
 

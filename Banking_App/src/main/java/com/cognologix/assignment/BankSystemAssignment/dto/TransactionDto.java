@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDto {
+
     private Integer accountNumber;
     private Double totalAmount;
     private Double depositAmount;

@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,6 +24,12 @@ public class Account {
     private String accountTypes;
 
 
+    private Double accountBalance;
+
+
+    @OneToMany(targetEntity = Transaction.class,cascade = CascadeType.ALL)
+    @JoinColumn(name = "ta_fk", referencedColumnName = "accountNumber")
+    private List<Transaction> transactionList;
 
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

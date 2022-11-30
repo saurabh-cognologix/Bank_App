@@ -9,8 +9,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,60 +19,51 @@ public class CustomerServiceImplementation implements CustomerServices {
     @Autowired
     private CustomerRepo customerRepo;
 
+
+
     @Autowired
     private ModelMapper modelMapper;
 
-    public CustomerServiceImplementation(CustomerRepo customerRepo) {
-        this.customerRepo = customerRepo;
-    }
+
 
     @Override
     public CustomerDto saveCustomer(CustomerDto customerDto) {
         Customer customer = this.dtoToCustomer(customerDto);
-        Customer savedCustomer = this.customerRepo.save(customer);
-        return this.customerToDto(savedCustomer);
+        //Customer savedCustomer = this.customerRepo.save(customer);
+        return this.customerToDto(this.customerRepo.save(customer));
 
     }
 
     @Override
-    public CustomerDto updateCustomerDetails(CustomerDto customerDto,Integer customerId) {
-        Customer customer = this.customerRepo.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer","id",customerId));
-
-        customer.setCustomerName(customerDto.getCustomerName());
-        customer.setCustomerEmail(customerDto.getCustomerEmail());
-        customer.setCustomerMobileNumber(customerDto.getCustomerMobileNumber());
-        customer.setCustomerDateOfBirth(customerDto.getCustomerDateOfBirth());
-        customer.setCustomerPanCardNumber(customerDto.getCustomerPanCardNumber());
-        customer.setCustomerAadharCardNumber(customerDto.getCustomerAadharCardNumber());
-
-        Customer updatedCustomer = this.customerRepo.save(customer);
-        CustomerDto customerDto1 = this.customerToDto(updatedCustomer);
-        return customerDto1;
+    public CustomerDto updateCustomerDetails(CustomerDto customerDto) {
+        Customer customer = this.dtoToCustomer(customerDto);
+        this.customerRepo.save(customer);
+        return this.customerToDto(customer);
     }
 
     @Override
     public List<CustomerDto> getCustomerDetails() {
         List<Customer> customer = this.customerRepo.findAll();
         System.out.println(customer);
-        List<CustomerDto> customerDtos = customer.stream().map(customer1 -> this.customerToDto(customer1)).collect(Collectors.toList());
+        List<CustomerDto> customerDtos = customer.stream().map(
+                customer1 -> this.customerToDto(customer1)).collect(Collectors.toList());
         return customerDtos;
     }
 
     @Override
-    public CustomerDto getCustomerById(Integer customerId) {
+    public Optional<CustomerDto> getCustomerById(Integer customerId) {
         Customer customer = this.customerRepo.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer","Id",customerId));
         CustomerDto customerDto = this.customerToDto(customer);
-        return customerDto;
+        return Optional.ofNullable(customerDto);
     }
 
 
     @Override
     public void deleteCustomer(Integer customerId) {
-        Customer customer = this.customerRepo.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer","Id",customerId));
-        this.customerRepo.delete(customer);
+//        Customer customer = this.customerRepo.findById(customerId)
+//                .orElseThrow(()->new ResourceNotFoundException("Customer","Iddd",customerId));
+        this.customerRepo.deleteById(customerId);
     }
 
     public Customer dtoToCustomer(CustomerDto customerDto){
@@ -89,6 +80,7 @@ public class CustomerServiceImplementation implements CustomerServices {
 
     public CustomerDto customerToDto(Customer customer){
         CustomerDto customerDto = this.modelMapper.map(customer, CustomerDto.class);
+//        CustomerDto customerDto = new CustomerDto();
 //        customerDto.setCustomerId(customer.getCustomerId());
 //        customerDto.setCustomerName(customer.getCustomerName());
 //        customerDto.setCustomerEmail(customer.getCustomerEmail());

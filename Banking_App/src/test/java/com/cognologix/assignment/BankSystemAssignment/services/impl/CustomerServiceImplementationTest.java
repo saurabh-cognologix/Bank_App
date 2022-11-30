@@ -13,47 +13,84 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class CustomerServiceImplementationTest {
 
-    @Mock
+    @MockBean
     private CustomerRepo customerRepo;
 
-    private CustomerServices customerServices;
 
+    @Autowired
     private CustomerServiceImplementation customerServiceImplementation;
 
+    private CustomerDto customerDto;
 
+   // private Customer customer;
 
 
     @BeforeEach
     void setUp() {
-        this.customerServiceImplementation= new CustomerServiceImplementation(this.customerRepo);
+        customerDto = CustomerDto.builder()
+                 .customerId(101)
+                .customerName("Monu")
+                .customerEmail("monu@gmail.com")
+                .customerAadharCardNumber("1234567890")
+                .customerPanCardNumber("0123456789")
+                .customerDateOfBirth("27/10/2018")
+                .build();
     }
 
     @Test
     void saveCustomer() {
-        CustomerDto customerDto = new CustomerDto(1,"mona","97358","m@gmail.com","hrt123","12345","20/09/2000");
-        customerServiceImplementation.saveCustomer(customerDto);
-        Customer customer = this.customerServiceImplementation.dtoToCustomer(customerDto);
-        verify(customerRepo).save(customer);
 
-//        Customer customer1=new Customer();
-//        customer1.setCustomerId(101);
-//        customer1.setCustomerName("mona");
-//        Customer createOrNot = customerRepo.save(customer1);
-//        Assertions.assertEquals(101,customer1.getCustomerId());
+//        Customer customer = this.customerServiceImplementation.dtoToCustomer(customerDto);
+//
+//
+//        given(customerRepo.findById(customer.getCustomerId()))
+//                .willReturn(Optional.of(customer));
+//        given(customerRepo.save(customer)).willReturn(customer);
+//
+//        CustomerDto savedCustomer = customerServiceImplementation.saveCustomer(customerDto);
+//        System.out.println("Saved Customer is "+savedCustomer);
+//        org.assertj.core.api.Assertions.assertThat(savedCustomer).isNotNull();
 
     }
 
     @Test
     void updateCustomerDetails() {
+        // given - precondition or setup
+        Customer customer = this.customerServiceImplementation.dtoToCustomer(customerDto);
+        given(customerRepo.save(customer)).willReturn(customer);
+        customerDto.setCustomerName("Raman");
+        customerDto.setCustomerEmail("raman@gmail.com");
+        customerDto.setCustomerMobileNumber("9792733298");
+        customerDto.setCustomerAadharCardNumber("123456789");
+        customerDto.setCustomerDateOfBirth("12/12/12");
+        customerDto.setCustomerPanCardNumber("123456789");
+
+        // when -  action or the behaviour that we are going test
+        CustomerDto updatedCustomer = customerServiceImplementation.updateCustomerDetails(customerDto);
+
+        // then - verify the output
+        org.assertj.core.api.Assertions.assertThat(updatedCustomer.getCustomerName()).isEqualTo("Raman");
+        org.assertj.core.api.Assertions.assertThat(updatedCustomer.getCustomerEmail()).isEqualTo("raman@gmail.com");
+        org.assertj.core.api.Assertions.assertThat(updatedCustomer.getCustomerMobileNumber()).isEqualTo("9792733298");
+
     }
 
     @Test
@@ -62,25 +99,34 @@ class CustomerServiceImplementationTest {
         verify(customerRepo).findAll();
     }
 
-    @Test
-    void getCustomerById() {
-        customerServiceImplementation.getCustomerById(1);
-        verify(customerRepo).findById(1);
-    }
+
 
     @Test
-    void testGetCustomerDetails() {
+    void getCustomerById() {
+        Customer customer = customerServiceImplementation.dtoToCustomer(customerDto);
+
+        //given
+        given(customerRepo.findById(101)).willReturn(Optional.of(customer));
+        // when
+        CustomerDto savedUser = customerServiceImplementation.getCustomerById(customer.getCustomerId()).get();
+        // then
+        org.assertj.core.api.Assertions.assertThat(savedUser).isNotNull();
     }
+
+
 
     @Test
     void deleteCustomer() {
+        // given - precondition or setup
+        Integer customerId = 101;
+
+        willDoNothing().given(customerRepo).deleteById(customerId);
+
+        // when -  action or the behaviour that we are going test
+        customerServiceImplementation.deleteCustomer(customerId);
+
+        // then - verify the output
+        verify(customerRepo, times(1)).deleteById(customerId);
     }
 
-    @Test
-    void dtoToCustomer() {
-    }
-
-    @Test
-    void customerToDto() {
-    }
 }
