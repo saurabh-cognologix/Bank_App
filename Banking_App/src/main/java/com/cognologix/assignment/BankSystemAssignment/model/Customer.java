@@ -1,14 +1,25 @@
 package com.cognologix.assignment.BankSystemAssignment.model;
 
-import lombok.*;
 
-import javax.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+
 import javax.validation.constraints.Size;
 import java.util.Date;
-import java.util.List;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +32,7 @@ import java.util.List;
 public class Customer {
 
     @Id
+
     private Integer customerId;
 
     @Column(name="name")
@@ -57,13 +69,4 @@ public class Customer {
     @Temporal(TemporalType.TIMESTAMP)
     private Date CreatedDate = new Date();
 
-//    public Customer(Integer customerId, String customerName, String customerMobileNumber, String customerEmail, String customerPanCardNumber, String customerAadharCardNumber, String customerDateOfBirth) {
-//        this.customerId = customerId;
-//        this.customerName = customerName;
-//        this.customerMobileNumber = customerMobileNumber;
-//        this.customerEmail = customerEmail;
-//        this.customerPanCardNumber = customerPanCardNumber;
-//        this.customerAadharCardNumber = customerAadharCardNumber;
-//        this.customerDateOfBirth = customerDateOfBirth;
-//    }
 }

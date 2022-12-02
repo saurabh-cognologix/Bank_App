@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 public class TransactionDto {
 
     private Integer accountNumber;
+//    private Integer senderAccountNumber;
+//    private Integer receiverAccountNumber;
     private Double totalAmount;
-    private Double depositAmount;
-    private Double withdrawAmount;
+    private Double transferAmount;
+   // private Double withdrawAmount;
 }

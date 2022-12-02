@@ -46,29 +46,32 @@ public class TransactionServiceImplementation implements TransactionService {
     * */
     @Override
     public void getDepositAmount(Integer accountNumber, Double depositAmount) {
+        //finding account in transaction model
+        //Transaction transaction = this.transactionRepo.findByAccountNumber(accountNumber);
+        Transaction transaction = new Transaction();
 
 
-//        Transaction transaction = this.transactionRepo.findById(accountNumber)
-//                .orElseThrow(()->new ResourceNotFoundException("Customer","id",accountNumber));
-
-        Transaction transaction = this.transactionRepo.findByAccountNumber(accountNumber);
-               // .orElseThrow(()->new ResourceNotFoundException("Customer","id",accountNumber));
-
-
-
-
+        //checking account is exit or not in account table
         Account account = this.accountRepo.findById(accountNumber)
                         .orElseThrow(()->new ResourceNotFoundException("Account","id",accountNumber));
 
-        transaction.setDepositAmount(depositAmount);
-        transaction.setWithdrawAmount(0.0);
 
-        Double totalBalance = transaction.getTotalAmount();
+        transaction.setTransferAmount(depositAmount);
+        //transaction.setWithdrawAmount(0.0);
+        transaction.setReceiverAccountNumber(accountNumber);
+        transaction.setSenderAccountNumber(null);
+
+        //finding total balance
+        Double totalBalance = account.getAccountBalance();
+        System.out.println("Total balance is "+totalBalance);
+
         Double balanceAfterDeposit = totalBalance + depositAmount;
 
         System.out.println("total balance is " +balanceAfterDeposit);
 
         transaction.setTotalAmount(balanceAfterDeposit);
+
+        //setting total balance in account model
         account.setAccountBalance(balanceAfterDeposit);
 
         this.transactionRepo.save(transaction);
@@ -80,17 +83,29 @@ public class TransactionServiceImplementation implements TransactionService {
     */
     @Override
     public void getWithDrawAmount(Integer accountNumber, Double withdrawAmount) {
-        Transaction transaction = this.transactionRepo.findById(accountNumber)
-                .orElseThrow(()->new ResourceNotFoundException("Customer","id",accountNumber));
-        Double totalBalance = transaction.getTotalAmount();
+
+        //Transaction transaction = this.transactionRepo.findByAccountNumber(accountNumber);
+        Transaction transaction = new Transaction();
+
+        //checking account is exit or not in account table
+        Account account = this.accountRepo.findById(accountNumber)
+                .orElseThrow(()->new ResourceNotFoundException("Account","id",accountNumber));
+
+
+        Double totalBalance = account.getAccountBalance();
 
         if(totalBalance>=withdrawAmount){
-            transaction.setWithdrawAmount(withdrawAmount);
-            transaction.setDepositAmount(0.0);
+            transaction.setTransferAmount(withdrawAmount);
+            //transaction.setDepositAmount(0.0);
+            transaction.setSenderAccountNumber(accountNumber);
             Double balanceAfterWithdrawl = totalBalance-withdrawAmount;
             System.out.println("Balance After withdrawal is " +balanceAfterWithdrawl);
+
             transaction.setTotalAmount(balanceAfterWithdrawl);
+            account.setAccountBalance(balanceAfterWithdrawl);
+
             this.transactionRepo.save(transaction);
+            this.accountRepo.save(account);
         }else {
             throw new InsufficientBalanceException("Your Account Balance is Low");
         }
@@ -103,7 +118,59 @@ public class TransactionServiceImplementation implements TransactionService {
 
     @Override
     public void amountTransfer(Integer senderAccountNumber, Integer receiverAccountNumber, Double transferAmount) {
-       getDepositAmount(receiverAccountNumber,transferAmount);
-       getWithDrawAmount(senderAccountNumber,transferAmount);
+//       getDepositAmount(receiverAccountNumber,transferAmount);
+//       getWithDrawAmount(senderAccountNumber,transferAmount);
+        /*
+        *   sender
+        */
+       // Transaction senderTransaction = this.transactionRepo.findByAccountNumber(senderAccountNumber);
+
+        Transaction transaction = new Transaction();
+
+        //checking account is exit or not in account table
+        Account senderAccount = this.accountRepo.findById(senderAccountNumber)
+                .orElseThrow(()->new ResourceNotFoundException("Account","id",senderAccountNumber));
+
+        //finding total balance
+        Double totalBalance = senderAccount.getAccountBalance();
+
+        if(totalBalance>=transferAmount){
+            Double balanceAfterWithdrawl = totalBalance-transferAmount;
+            System.out.println("Balance After withdrawal is " +balanceAfterWithdrawl);
+            transaction.setSenderAccountNumber(senderAccountNumber);
+            transaction.setTransferAmount(transferAmount);
+            transaction.setTotalAmount(balanceAfterWithdrawl);
+            this.transactionRepo.save(transaction);
+            this.accountRepo.save(senderAccount);
+        }else {
+            throw new InsufficientBalanceException("Your Account Balance is Low");
+        }
+
+        /*
+        *   ---- Receiver
+        * */
+       // Transaction receiverTransaction = this.transactionRepo.findByAccountNumber(receiverAccountNumber);
+
+        //checking account is exit or not in account table
+        Account receiverAccount = this.accountRepo.findById(receiverAccountNumber)
+                .orElseThrow(()->new ResourceNotFoundException("Account","id",receiverAccountNumber));
+
+
+        Double totalBalanceOfReceiver = receiverAccount.getAccountBalance();
+
+
+             transaction.setTransferAmount(transferAmount);
+            // transaction.setDepositAmount(0.0);
+             transaction.setReceiverAccountNumber(receiverAccountNumber);
+
+            // transaction.setSenderAccountNumber();
+            Double balanceAfterWithdrawl = totalBalanceOfReceiver+transferAmount;
+            System.out.println("Balance After withdrawal is " +balanceAfterWithdrawl);
+
+            transaction.setTotalAmount(balanceAfterWithdrawl);
+            receiverAccount.setAccountBalance(balanceAfterWithdrawl);
+
+            this.transactionRepo.save(transaction);
+            this.accountRepo.save(receiverAccount);
     }
 }

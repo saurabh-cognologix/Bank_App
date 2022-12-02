@@ -6,7 +6,13 @@ import com.cognologix.assignment.BankSystemAssignment.services.AccountServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 import java.util.List;
@@ -32,7 +38,7 @@ public class AccountController {
     }
 
     @GetMapping("/get/{accountNumber}")
-    public ResponseEntity<AccountDto> findAccountDetailsById( @PathVariable("accountNumber") int accountNumber){
+    public ResponseEntity<AccountDto> findAccountDetailsById( @PathVariable("accountNumber") Integer accountNumber){
         return ResponseEntity.ok(this.accountServices.getAccountDetailsByAccountNumber(accountNumber));
     }
 
@@ -40,7 +46,7 @@ public class AccountController {
     *  Delete account Number
     * */
     @DeleteMapping("/delete/{accountNumber}")
-    public ResponseEntity<ApiResponse> deleteAccountDetailsById(@PathVariable("accountNumber") int accountNumber){
+    public ResponseEntity<ApiResponse> deleteAccountDetailsById(@PathVariable("accountNumber") Integer accountNumber){
         this.accountServices.deleteAccount(accountNumber);
         return new ResponseEntity<ApiResponse>(new ApiResponse("User deleted Successfully", true), HttpStatus.OK);
     }
