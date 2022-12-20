@@ -1,7 +1,10 @@
 package com.cognologix.assignment.BankSystemAssignment.controllers;
 
 import com.cognologix.assignment.BankSystemAssignment.dto.CustomerDto;
-import com.cognologix.assignment.BankSystemAssignment.payloads.ApiResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.CreateCustomerResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.CustomerUpdateResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.DeleteSingleCustomerResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.GetSingleCustomerResponse;
 import com.cognologix.assignment.BankSystemAssignment.services.CustomerServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -28,55 +29,39 @@ public class CustomerController {
     @Autowired
     private CustomerServices customerServices;
 
-    // POST - create customer
+    //POST - CREATE A NEW CUSTOMER
     @PostMapping("/createCustomer")
-    public ResponseEntity<CustomerDto> saveCustomer(@Valid @RequestBody CustomerDto customerDto){
-      //  System.out.println(customerDto.getAccountDto());
-        CustomerDto customerDto1 = this.customerServices.saveCustomer(customerDto);
-        return new ResponseEntity<>(customerDto1, HttpStatus.CREATED);
+    public ResponseEntity<CreateCustomerResponse> createCustomer(@Valid @RequestBody CustomerDto customerDto){
+        CreateCustomerResponse createCustomerResponse = this.customerServices.createCustomer(customerDto);
+        HttpStatus httpStatus = createCustomerResponse.getSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(createCustomerResponse, httpStatus);
     }
 
-    // PUT - update customer
+    //PUT - UPDATE CUSTOMER
     @PutMapping("/updateCustomer/{customerId}")
-   public ResponseEntity<CustomerDto> updateCustomer(@Valid @RequestBody CustomerDto customerDto,@PathVariable("customerId")Integer customerId ){
-
-        return customerServices.getCustomerById(customerId)
-                .map(savedCustomer -> {
-                    savedCustomer.setCustomerName(customerDto.getCustomerName());
-                    savedCustomer.setCustomerEmail(customerDto.getCustomerEmail());
-                    savedCustomer.setCustomerPanCardNumber(customerDto.getCustomerPanCardNumber());
-                    savedCustomer.setCustomerAadharCardNumber(customerDto.getCustomerAadharCardNumber());
-                    savedCustomer.setCustomerDateOfBirth(customerDto.getCustomerDateOfBirth());
-                    savedCustomer.setCustomerMobileNumber(customerDto.getCustomerMobileNumber());
-
-                    CustomerDto customerDto1=customerServices.updateCustomerDetails(savedCustomer);
-                    return new ResponseEntity<>(customerDto1, HttpStatus.OK);
-
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+   public ResponseEntity<CustomerUpdateResponse> updateCustomer(@Valid @RequestBody CustomerDto customerDto, @PathVariable("customerId")Integer customerId ){
+        CustomerUpdateResponse customerUpdateResponse = this.customerServices.updateCustomerDetails(customerDto);
+        HttpStatus httpStatus = customerUpdateResponse.getSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        System.out.println(customerUpdateResponse.getSuccess());
+        return new ResponseEntity<>(customerUpdateResponse,httpStatus);
    }
 
 
-    // DELETE - delete customer
+    //DELETE - DELETE CUSTOMER BY CUSTOMER-ID
     @DeleteMapping("/deleteCustomer/{customerId}")
-    public ResponseEntity<ApiResponse> deleteCustomer(@PathVariable("customerId") Integer customerId ){
-        this.customerServices.deleteCustomer(customerId);
-        return new ResponseEntity<ApiResponse>(new ApiResponse("User deleted Successfully", true), HttpStatus.OK);
+    public ResponseEntity<DeleteSingleCustomerResponse> deleteCustomer(@PathVariable("customerId") Integer customerId ){
+        DeleteSingleCustomerResponse deleteSingleCustomerResponse = this.customerServices.deleteSingleCustomer(customerId);
+        HttpStatus httpStatus = deleteSingleCustomerResponse.getSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(deleteSingleCustomerResponse,httpStatus);
     }
 
 
-    // GET - get user
-    @GetMapping("/getCustomer")
-    public ResponseEntity<List<CustomerDto>> getAllCustomer(){
-        return ResponseEntity.ok(this.customerServices.getCustomerDetails());
-    }
-
-    /*
-    *  Get customer by Id
-    * */
+    //GET - GET CUSTOMER BY ID
     @GetMapping("/getCustomer/{customerId}")
-    public ResponseEntity<Optional<CustomerDto>> getCustomerById(@PathVariable("customerId") Integer customerId){
-        return ResponseEntity.ok(this.customerServices.getCustomerById(customerId));
+    public ResponseEntity<GetSingleCustomerResponse> getCustomerById(@PathVariable("customerId") Integer customerId){
+        GetSingleCustomerResponse getSingleCustomerResponse = this.customerServices.getCustomerById(customerId);
+        HttpStatus httpStatus = getSingleCustomerResponse.getSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(getSingleCustomerResponse,httpStatus);
     }
 
 }

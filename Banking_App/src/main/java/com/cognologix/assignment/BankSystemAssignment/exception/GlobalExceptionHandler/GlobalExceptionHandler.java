@@ -1,7 +1,8 @@
 package com.cognologix.assignment.BankSystemAssignment.exception.GlobalExceptionHandler;
 
+import com.cognologix.assignment.BankSystemAssignment.exception.CustomerAlreadyExistException;
 import com.cognologix.assignment.BankSystemAssignment.exception.ResourceNotFoundException;
-import com.cognologix.assignment.BankSystemAssignment.payloads.ApiResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -19,6 +20,13 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage();
         ApiResponse apiResponse = new ApiResponse(message, false);
         return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CustomerAlreadyExistException.class)
+    public ResponseEntity<ApiResponse> customerAlreadyExistExceptionHandler(CustomerAlreadyExistException ex){
+        String message = ex.getMessage();
+        ApiResponse apiResponse = new ApiResponse(message, false);
+        return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

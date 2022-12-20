@@ -10,7 +10,7 @@ public class BankSystemAssignmentApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BankSystemAssignmentApplication.class, args);
-		System.out.println("Banking Application Started............");
+		System.out.println("Project Started...........");
 	}
     @Bean
     public ModelMapper modelMapper(){

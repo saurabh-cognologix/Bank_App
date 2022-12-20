@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -50,11 +51,12 @@ public class Customer {
     private String customerEmail;
 
     @NotEmpty
-    @Column(name="panCard_number")
+    @Column(name="panCard_number",length = 10)
     private String customerPanCardNumber;
 
     @NotEmpty
     @Column(name="aadhar_card_number")
+    @Size(min = 11,max = 12,message = "Aadhar Card Number is of 12 digit")
     private String customerAadharCardNumber;
 
     @NotEmpty

@@ -11,20 +11,14 @@ public class TransactionConvertor {
     @Autowired
     private ModelMapper modelMapper;
 
-
-
-    /*
-    * Converted TransactionDto  to Transaction
-    */
+   //TransactionDto to Transaction Conversion
     public Transaction dtoToTransaction (TransactionDto transactionDto){
          Transaction transaction = this.modelMapper.map(transactionDto, Transaction.class);
          return transaction;
 
     }
 
-    /*
-    * Converted Transaction to TransactionDto
-    * */
+    //Transaction to TransactionDto Conversion
 
     public TransactionDto transactionToDto (Transaction transaction){
         TransactionDto transactionDto = this.modelMapper.map(transaction, TransactionDto.class);

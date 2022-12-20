@@ -5,34 +5,44 @@ import com.cognologix.assignment.BankSystemAssignment.dao.AccountRepo;
 import com.cognologix.assignment.BankSystemAssignment.dto.AccountDto;
 import com.cognologix.assignment.BankSystemAssignment.exception.ResourceNotFoundException;
 import com.cognologix.assignment.BankSystemAssignment.model.Account;
+import com.cognologix.assignment.BankSystemAssignment.responses.accountResponses.CreateAccountResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.accountResponses.DeleteAccountResponse;
 import com.cognologix.assignment.BankSystemAssignment.services.AccountServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class AccountServicesImplementation implements AccountServices {
-    @Autowired
+
     private AccountRepo accountRepo;
+
+    public AccountServicesImplementation(AccountRepo accountRepo) {
+        this.accountRepo = accountRepo;
+    }
 
     @Autowired
     private AccountConvertor accountConvertor;
 
     @Override
-    public AccountDto saveAccount(AccountDto accountDto) {
-        Account account = this.accountConvertor.dtoToAccount(accountDto);
-        Account savingAccount = this.accountRepo.save(account);
-        return this.accountConvertor.accountToDto(savingAccount);
+    public CreateAccountResponse createAccount(AccountDto accountDto) {
 
-//        Account accountDetails = this.accountDtoToModelConverter.dtoToModel(accountDto);
-//        Account acc = this.accountRepo.save(accountDetails);
-//        return this.accountModelToDtoConverter.modelToDto(acc);
+        Account account = this.accountConvertor.dtoToAccount(accountDto);
+        Optional<Account> savedAccount = accountRepo.findById(account.getAccountNumber());
+        if(savedAccount.isPresent()){
+            throw new ResourceNotFoundException("Account","AccountNumber",account.getAccountNumber());
+        }
+        this.accountRepo.save(account);
+        CreateAccountResponse createAccountResponse = new CreateAccountResponse("Account Opened Successfully",true,accountDto);
+        return createAccountResponse;
+
     }
 
     @Override
-    public List<AccountDto> getAccountDetails() {
+    public List<AccountDto> getAllAccountDetails() {
         List<Account> accountList = this.accountRepo.findAll();
         List<AccountDto> accountDtoList = accountList.stream()
                 .map(account -> this.accountConvertor.accountToDto(account))
@@ -41,17 +51,18 @@ public class AccountServicesImplementation implements AccountServices {
     }
 
     @Override
-    public AccountDto getAccountDetailsByAccountNumber(Integer accountNumber) {
+    public Optional<AccountDto> getAccountDetailsByAccountNumber(Integer accountNumber) {
         Account account = this.accountRepo.findById(accountNumber)
                 .orElseThrow(()->new ResourceNotFoundException("Account","AccountNumber",accountNumber));
-        return this.accountConvertor.accountToDto(account);
+        //return this.accountConvertor.accountToDto(account);
+        AccountDto accountDto = this.accountConvertor.accountToDto(account);
+        return Optional.of(accountDto);
     }
 
     @Override
-    public void deleteAccount(Integer accountNumber) {
-        Account account = this.accountRepo.findById(accountNumber)
-                .orElseThrow(()->new ResourceNotFoundException("Account","AccountNumber",accountNumber));
-        this.accountRepo.delete(account);
-
+    public DeleteAccountResponse deleteSingleAccount(Integer accountNumber) {
+        this.accountRepo.deleteById(accountNumber);
+        DeleteAccountResponse deleteAccountResponse = new DeleteAccountResponse(true,"Account Deleted SuccessFully");
+        return deleteAccountResponse;
     }
 }

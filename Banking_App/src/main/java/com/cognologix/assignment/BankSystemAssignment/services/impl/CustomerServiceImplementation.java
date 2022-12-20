@@ -1,93 +1,73 @@
 package com.cognologix.assignment.BankSystemAssignment.services.impl;
 
-import com.cognologix.assignment.BankSystemAssignment.dao.CustomerRepo;
+import com.cognologix.assignment.BankSystemAssignment.convertor.CustomerConvertor;
+import com.cognologix.assignment.BankSystemAssignment.dao.CustomerRepository;
 import com.cognologix.assignment.BankSystemAssignment.dto.CustomerDto;
+import com.cognologix.assignment.BankSystemAssignment.exception.CustomerAlreadyExistException;
 import com.cognologix.assignment.BankSystemAssignment.exception.ResourceNotFoundException;
+import com.cognologix.assignment.BankSystemAssignment.model.Account;
 import com.cognologix.assignment.BankSystemAssignment.model.Customer;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.CreateCustomerResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.CustomerUpdateResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.DeleteSingleCustomerResponse;
+import com.cognologix.assignment.BankSystemAssignment.responses.customerResponses.GetSingleCustomerResponse;
 import com.cognologix.assignment.BankSystemAssignment.services.CustomerServices;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImplementation implements CustomerServices {
 
     @Autowired
-    private CustomerRepo customerRepo;
-
-
-
+    private CustomerRepository customerRepository;
     @Autowired
-    private ModelMapper modelMapper;
-
-
+    private CustomerConvertor customerConvertor;
 
     @Override
-    public CustomerDto saveCustomer(CustomerDto customerDto) {
-        Customer customer = this.dtoToCustomer(customerDto);
-        //Customer savedCustomer = this.customerRepo.save(customer);
-        return this.customerToDto(this.customerRepo.save(customer));
+    public CreateCustomerResponse createCustomer(CustomerDto customerDto) {
+        Customer customer = this.customerConvertor.dtoToCustomer(customerDto);
+//        Customer newCustomer = this.customerRepository.findById(customer.getCustomerId())
+//                .orElseThrow(()->new CustomerAlreadyExistException("Customer Is Already Present With Given Id "+customer.getCustomerId()));
+        Optional<Customer> savedCustomer = customerRepository.findById(customer.getCustomerId());
+        if(savedCustomer.isPresent()){
+            throw new CustomerAlreadyExistException("Customer Is Already Present With Given Id "+customer.getCustomerId());
 
+        }
+        customerRepository.save(customer);
+        CustomerDto newCustomerDto = this.customerConvertor.customerToDto(customer);
+        CreateCustomerResponse customerResponse = new CreateCustomerResponse(true,
+                    "Customer Registered Successfully",newCustomerDto);
+        return customerResponse;
     }
 
     @Override
-    public CustomerDto updateCustomerDetails(CustomerDto customerDto) {
-        Customer customer = this.dtoToCustomer(customerDto);
-        this.customerRepo.save(customer);
-        return this.customerToDto(customer);
+    public CustomerUpdateResponse updateCustomerDetails(CustomerDto customerDto) {
+            Customer customer = this.customerConvertor.dtoToCustomer(customerDto);
+            Customer updatedCustomer = this.customerRepository.findById(customer.getCustomerId())
+                    .orElseThrow(()->new ResourceNotFoundException("Customer","Id",customer.getCustomerId()));
+            this.customerRepository.save(customer);
+            CustomerDto updatedCustomerDto = this.customerConvertor.customerToDto(updatedCustomer);
+            CustomerUpdateResponse customerUpdateResponse = new CustomerUpdateResponse(true,
+                "Updated successfully", updatedCustomerDto);
+            return customerUpdateResponse;
     }
 
     @Override
-    public List<CustomerDto> getCustomerDetails() {
-        List<Customer> customer = this.customerRepo.findAll();
-        System.out.println(customer);
-        List<CustomerDto> customerDtos = customer.stream().map(
-                customer1 -> this.customerToDto(customer1)).collect(Collectors.toList());
-        return customerDtos;
-    }
-
-    @Override
-    public Optional<CustomerDto> getCustomerById(Integer customerId) {
-        Customer customer = this.customerRepo.findById(customerId)
+    public GetSingleCustomerResponse getCustomerById(Integer customerId) {
+        Customer customer = this.customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer","Id",customerId));
-        CustomerDto customerDto = this.customerToDto(customer);
-        return Optional.ofNullable(customerDto);
+        CustomerDto customerDto = this.customerConvertor.customerToDto(customer);
+        GetSingleCustomerResponse getSingleCustomerResponse = new GetSingleCustomerResponse(true,"Customer Found With Account Id"+customerId,customerDto);
+        return getSingleCustomerResponse;
     }
 
 
     @Override
-    public void deleteCustomer(Integer customerId) {
-//        Customer customer = this.customerRepo.findById(customerId)
-//                .orElseThrow(()->new ResourceNotFoundException("Customer","Iddd",customerId));
-        this.customerRepo.deleteById(customerId);
-    }
-
-    public Customer dtoToCustomer(CustomerDto customerDto){
-        Customer customer = this.modelMapper.map(customerDto,Customer.class);
-//        customer.setCustomerId(customerDto.getCustomerId());
-//        customer.setCustomerName(customerDto.getCustomerName());
-//        customer.setCustomerEmail(customerDto.getCustomerEmail());
-//        customer.setCustomerMobileNumber(customerDto.getCustomerMobileNumber());
-//        customer.setCustomerDateOfBirth(customerDto.getCustomerDateOfBirth());
-//        customer.setCustomerPanCardNumber(customerDto.getCustomerPanCardNumber());
-//        customer.setCustomerAadharCardNumber(customerDto.getCustomerAadharCardNumber());
-        return customer;
-    }
-
-    public CustomerDto customerToDto(Customer customer){
-        CustomerDto customerDto = this.modelMapper.map(customer, CustomerDto.class);
-//        CustomerDto customerDto = new CustomerDto();
-//        customerDto.setCustomerId(customer.getCustomerId());
-//        customerDto.setCustomerName(customer.getCustomerName());
-//        customerDto.setCustomerEmail(customer.getCustomerEmail());
-//        customerDto.setCustomerMobileNumber(customer.getCustomerMobileNumber());
-//        customerDto.setCustomerDateOfBirth(customer.getCustomerDateOfBirth());
-//        customerDto.setCustomerPanCardNumber(customer.getCustomerPanCardNumber());
-//        customerDto.setCustomerAadharCardNumber(customer.getCustomerAadharCardNumber());
-        return customerDto;
+    public DeleteSingleCustomerResponse deleteSingleCustomer(Integer customerId) {
+        this.customerRepository.deleteById(customerId);
+        DeleteSingleCustomerResponse deleteSingleCustomerResponse = new DeleteSingleCustomerResponse(true,"Customer Deleted SuccessFully");
+        return deleteSingleCustomerResponse;
     }
 }

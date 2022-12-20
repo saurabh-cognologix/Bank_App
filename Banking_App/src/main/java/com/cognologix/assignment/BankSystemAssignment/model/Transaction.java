@@ -42,8 +42,6 @@ public class Transaction {
     @Column(name="transfer_amount")
     private Double transferAmount;
 
-//    @Column(name="withdraw_amount")
-//    private Double withdrawAmount;
 
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

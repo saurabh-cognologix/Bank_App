@@ -9,11 +9,13 @@ import com.cognologix.assignment.BankSystemAssignment.exception.InsufficientBala
 import com.cognologix.assignment.BankSystemAssignment.exception.ResourceNotFoundException;
 import com.cognologix.assignment.BankSystemAssignment.model.Account;
 import com.cognologix.assignment.BankSystemAssignment.model.Transaction;
+import com.cognologix.assignment.BankSystemAssignment.responses.transactionResponses.TransactionResponse;
 import com.cognologix.assignment.BankSystemAssignment.services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class TransactionServiceImplementation implements TransactionService {
@@ -26,12 +28,12 @@ public class TransactionServiceImplementation implements TransactionService {
     @Autowired
     private TransactionConvertor transactionConvertor;
 
-    @Override
-    public TransactionDto createTransaction(TransactionDto transactionDto) {
-        Transaction transaction = this.transactionConvertor.dtoToTransaction(transactionDto);
-        Transaction transaction1 = this.transactionRepo.save(transaction);
-        return  this.transactionConvertor.transactionToDto(transaction1);
-    }
+//    @Override
+//    public TransactionDto createTransaction(TransactionDto transactionDto) {
+//        Transaction transaction = this.transactionConvertor.dtoToTransaction(transactionDto);
+//        Transaction transaction1 = this.transactionRepo.save(transaction);
+//        return  this.transactionConvertor.transactionToDto(transaction1);
+//    }
 
     @Override
     public List<TransactionDto> getTransactionDetails() {
@@ -41,20 +43,22 @@ public class TransactionServiceImplementation implements TransactionService {
         return transDtos;
     }
 
-    /*
-    * Deposit amount in another account
-    * */
     @Override
-    public void getDepositAmount(Integer accountNumber, Double depositAmount) {
-        //finding account in transaction model
-        //Transaction transaction = this.transactionRepo.findByAccountNumber(accountNumber);
-        Transaction transaction = new Transaction();
+    public Optional<TransactionDto> getTransactionById(Integer transactionId) {
+        Transaction transaction = this.transactionRepo.findById(transactionId)
+                .orElseThrow(()->new ResourceNotFoundException("Transaction","Id",transactionId));
+        TransactionDto transactionDto = this.transactionConvertor.transactionToDto(transaction);
+        return Optional.ofNullable(transactionDto);
+    }
 
+    //Deposit Amount in One Account
+    @Override
+    public TransactionResponse depositAmount(Integer accountNumber, Double depositAmount) {
+        Transaction transaction = new Transaction();
 
         //checking account is exit or not in account table
         Account account = this.accountRepo.findById(accountNumber)
                         .orElseThrow(()->new ResourceNotFoundException("Account","id",accountNumber));
-
 
         transaction.setTransferAmount(depositAmount);
         //transaction.setWithdrawAmount(0.0);
@@ -77,14 +81,15 @@ public class TransactionServiceImplementation implements TransactionService {
         this.transactionRepo.save(transaction);
         this.accountRepo.save(account);
 
-    }
-    /*
-    * withdraw amount from one account
-    */
-    @Override
-    public void getWithDrawAmount(Integer accountNumber, Double withdrawAmount) {
+        TransactionResponse transactionResponse = new TransactionResponse(true,"Amount Deposit Successfully");
+        return transactionResponse;
 
-        //Transaction transaction = this.transactionRepo.findByAccountNumber(accountNumber);
+    }
+
+    //Withdraw Money From One Account
+    @Override
+    public TransactionResponse getWithDrawAmount(Integer accountNumber, Double withdrawAmount) {
+
         Transaction transaction = new Transaction();
 
         //checking account is exit or not in account table
@@ -106,30 +111,29 @@ public class TransactionServiceImplementation implements TransactionService {
 
             this.transactionRepo.save(transaction);
             this.accountRepo.save(account);
+            TransactionResponse transactionResponse = new TransactionResponse(true,"Amount Withdraw Successfully");
+            return transactionResponse;
         }else {
             throw new InsufficientBalanceException("Your Account Balance is Low");
         }
 
     }
 
-    /*
-    * Transfer amount from one account to another
-    * */
+
+    // Transfer amount from one account to another
 
     @Override
-    public void amountTransfer(Integer senderAccountNumber, Integer receiverAccountNumber, Double transferAmount) {
-//       getDepositAmount(receiverAccountNumber,transferAmount);
-//       getWithDrawAmount(senderAccountNumber,transferAmount);
-        /*
-        *   sender
-        */
-       // Transaction senderTransaction = this.transactionRepo.findByAccountNumber(senderAccountNumber);
-
+    public TransactionResponse amountTransfer(Integer senderAccountNumber, Integer receiverAccountNumber, Double transferAmount) {
+        //sender
         Transaction transaction = new Transaction();
 
         //checking account is exit or not in account table
         Account senderAccount = this.accountRepo.findById(senderAccountNumber)
                 .orElseThrow(()->new ResourceNotFoundException("Account","id",senderAccountNumber));
+
+        //checking receiverAccountNumber is exit or not in account table
+        Account receiverAccount = this.accountRepo.findById(receiverAccountNumber)
+                .orElseThrow(()->new ResourceNotFoundException("Account","id",receiverAccountNumber));
 
         //finding total balance
         Double totalBalance = senderAccount.getAccountBalance();
@@ -145,16 +149,7 @@ public class TransactionServiceImplementation implements TransactionService {
         }else {
             throw new InsufficientBalanceException("Your Account Balance is Low");
         }
-
-        /*
-        *   ---- Receiver
-        * */
-       // Transaction receiverTransaction = this.transactionRepo.findByAccountNumber(receiverAccountNumber);
-
-        //checking account is exit or not in account table
-        Account receiverAccount = this.accountRepo.findById(receiverAccountNumber)
-                .orElseThrow(()->new ResourceNotFoundException("Account","id",receiverAccountNumber));
-
+        //Receiver
 
         Double totalBalanceOfReceiver = receiverAccount.getAccountBalance();
 
@@ -172,5 +167,7 @@ public class TransactionServiceImplementation implements TransactionService {
 
             this.transactionRepo.save(transaction);
             this.accountRepo.save(receiverAccount);
+            TransactionResponse transactionResponse = new TransactionResponse(true,"Amount transfer successfully....");
+            return transactionResponse;
     }
 }

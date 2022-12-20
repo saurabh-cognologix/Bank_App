@@ -11,18 +11,15 @@ public class AccountConvertor {
     @Autowired
     private ModelMapper modelMapper;
 
-    /*
-    * Dto To Account Convertor
-    * */
+
+    // Dto To Account Convertor
     public Account dtoToAccount(AccountDto accountDto){
         Account account = this.modelMapper.map(accountDto, Account.class);
         return account;
     }
 
-    /*
-    *  Account To Dto Convertor
-    * */
 
+    // Account To Dto Convertor
     public AccountDto accountToDto(Account account){
         AccountDto accountDto = this.modelMapper.map(account, AccountDto.class);
         return accountDto;
